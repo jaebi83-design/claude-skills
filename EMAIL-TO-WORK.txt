@@ -1,0 +1,109 @@
+To: jim.aebi@stellantis.com
+From: [Your personal email]
+Subject: Claude Skills Repository - Installation Instructions
+
+Hi Jim,
+
+Here are the instructions to access and install your Claude Code skills on your work computer.
+
+===============================================================================
+CLAUDE SKILLS REPOSITORY - QUICK INSTALLATION GUIDE
+===============================================================================
+
+Repository URL: https://github.com/jaebi83-design/claude-skills
+
+-------------------------------------------------------------------------------
+INSTALLATION STEPS (5 minutes)
+-------------------------------------------------------------------------------
+
+1. CLONE THE REPOSITORY
+   Open terminal/command prompt and run:
+
+   git clone https://github.com/jaebi83-design/claude-skills.git
+
+2. INSTALL ALL SKILLS
+
+   cd claude-skills
+   cp -r skills/* ~/.claude/skills/
+
+3. VERIFY INSTALLATION
+
+   ls ~/.claude/skills/
+
+   You should see: example-skill, my-custom-skill, another-skill
+
+-------------------------------------------------------------------------------
+USING THE SKILLS
+-------------------------------------------------------------------------------
+
+Once installed, skills can be used in Claude Code:
+
+• Manual invocation: /example-skill
+• Auto-detection: Claude activates based on context
+
+-------------------------------------------------------------------------------
+INSTALL INDIVIDUAL SKILLS ONLY
+-------------------------------------------------------------------------------
+
+If you only need specific skills:
+
+cp -r claude-skills/skills/example-skill ~/.claude/skills/
+
+Or multiple specific skills:
+
+cp -r claude-skills/skills/{example-skill,my-custom-skill} ~/.claude/skills/
+
+-------------------------------------------------------------------------------
+PROJECT-SPECIFIC INSTALLATION
+-------------------------------------------------------------------------------
+
+To install skills for a specific project only (not globally):
+
+cd /path/to/your/project
+mkdir -p .claude/skills
+cp -r /path/to/claude-skills/skills/* .claude/skills/
+
+-------------------------------------------------------------------------------
+UPDATING SKILLS
+-------------------------------------------------------------------------------
+
+When new skills are added to the repository:
+
+cd claude-skills
+git pull origin main
+cp -r skills/* ~/.claude/skills/
+
+-------------------------------------------------------------------------------
+UNINSTALLING SKILLS
+-------------------------------------------------------------------------------
+
+To remove a skill:
+
+rm -rf ~/.claude/skills/skill-name
+
+-------------------------------------------------------------------------------
+TROUBLESHOOTING
+-------------------------------------------------------------------------------
+
+• If ~/.claude/skills/ doesn't exist, create it:
+  mkdir -p ~/.claude/skills/
+
+• To see all installed skills:
+  ls -la ~/.claude/skills/
+
+• Full documentation available in the repository README.md
+
+-------------------------------------------------------------------------------
+ADDITIONAL RESOURCES
+-------------------------------------------------------------------------------
+
+• Claude Code Docs: https://code.claude.com/docs
+• Official Skills Repo: https://github.com/anthropics/skills
+• Awesome Claude Skills: https://github.com/travisvn/awesome-claude-skills
+
+===============================================================================
+
+Questions? Check the full README.md in the repository or reach out.
+
+Best regards,
+Jim Aebi
