@@ -86,13 +86,65 @@ Claude will automatically activate skills based on context when their descriptio
 
 ## Available Skills
 
-### example-skill
+### From 2389 Research Collection
+
+#### binary-re
+Binary reverse engineering with hypothesis-driven analysis. Routes to specialized sub-skills for triage, static analysis, dynamic analysis, synthesis, and tool setup. Includes human-in-the-loop safeguards.
+
+#### building-multiagent-systems
+Multi-agent architecture patterns with four-layer stack (Reasoning → Orchestration → Tool Bus → Deterministic Adapters). Seven coordination patterns including Fan-Out/Fan-In, Pipeline, Recursive Delegation, and MAKER.
+
+#### ceo-personal-os
+Executive reflection system combining 11 strategic frameworks with coaching-style interview scripts. Includes daily, weekly, quarterly, and annual review cadences. Not a task manager—focused on clarity over productivity theater.
+
+#### css-development
+CSS development using Tailwind and semantic patterns. Routes to sub-skills for creating components, validation, and refactoring. Dark mode by default, composition-first approach.
+
+#### documentation-audit
+Systematically verifies documentation claims against actual codebase. Two-pass verification process catches dead links, incorrect configs, and behavioral mismatches before releases.
+
+#### firebase-development
+Complete Firebase development workflows. Routes to sub-skills for project setup, adding features, debugging, and validation. Based on production patterns with TypeScript, vitest, and biome.
+
+#### fresh-eyes-review
+Pre-commit quality gate that catches bugs tests miss. Seven-step process covering security, logic errors, business rules, and performance. Takes 2-5 minutes, mandatory before commits.
+
+#### gtm-partner
+Go-to-market strategy consultant that recommends channels, validates strategy, and generates assets. Includes naming, pricing analysis, landing page, and channel-specific content. Delivers single HTML webpage with complete GTM plan.
+
+#### landing-page-design
+High-converting landing pages with anti-AI-slop design patterns. Vibe discovery process creates distinctive aesthetics. Covers hero sections, features, social proof, pricing, and CTAs.
+
+#### product-launcher
+Generates coordinated launch materials: subscriber email, CEO blog post, and tweet thread. Uses established voice profiles for 2389 audience with Slack integration for team review.
+
+#### remote-system-maintenance
+Linux system diagnostics and maintenance for Ubuntu/Debian. Seven-stage cleanup sequence can recover 2+ GB. Includes diagnostics, log review, and package assessment.
+
+#### scenario-testing
+Real-dependency testing with zero mocks. "NO FEATURE IS VALIDATED UNTIL A SCENARIO PASSES WITH REAL DEPENDENCIES." Tests in `.scratch/` directory, extracts patterns to `scenarios.jsonl`.
+
+#### terminal-title
+Automatically updates terminal title with emoji, project name, and current topic. Triggers at session start and topic changes. Cross-platform support (bash/PowerShell).
+
+#### test-kitchen
+Parallel exploration framework with two gate skills: Omakase-off (entry) for design exploration and Cookoff (exit) for implementation comparison. Enables comparing multiple approaches simultaneously.
+
+#### worldview-synthesis
+Personal philosophy documentation through systematic interrogation. Six-phase workflow covering 19 life domains. Generates outputs from 100-word mission to 2000-word narrative. Embraces tensions rather than forcing resolution.
+
+#### xtool
+Cross-platform Xcode-free iOS development using SwiftPM on Linux, Windows, and macOS. Covers project setup, app extensions (widgets, share, etc.), and deployment.
+
+### Template Skills
+
+#### example-skill
 A template skill demonstrating the basic structure. Use this as a starting point for creating new skills.
 
-### my-custom-skill
+#### my-custom-skill
 A custom skill placeholder. Customize this for your specific use case.
 
-### another-skill
+#### another-skill
 Another skill placeholder ready for customization.
 
 ## Adding New Skills
