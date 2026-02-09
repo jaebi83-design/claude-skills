@@ -198,3 +198,21 @@ def get_source_video(video_id: int):
     row = conn.execute("SELECT * FROM source_videos WHERE id = ?", (video_id,)).fetchone()
     conn.close()
     return dict(row) if row else None
+
+
+def get_attack_type_by_name(name: str):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM attack_types WHERE LOWER(name) = LOWER(?)", (name,)
+    ).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def get_technique_by_name(name: str):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM techniques WHERE LOWER(name) = LOWER(?)", (name,)
+    ).fetchone()
+    conn.close()
+    return dict(row) if row else None
