@@ -32,6 +32,9 @@ def _unique_clip_filename(label: str, clips_dir: Path) -> str:
     while (clips_dir / f"{base}_{counter}.mp4").exists():
         counter += 1
     return f"{base}_{counter}.mp4"
+
+
+def run_decompose_job(job_id: int):
     """Run a full decomposition job: detect text boundaries, then split video.
 
     1. Extract frames from the source video at the configured interval
