@@ -12,7 +12,26 @@ from app.video_processor import (
 from app.text_detector import detect_text_boundaries, normalize_text
 
 
-def run_decompose_job(job_id: int):
+def _label_to_filename(label: str) -> str:
+    """Convert a segment label to a safe filename."""
+    # Replace spaces with underscores, remove non-alphanumeric characters
+    import re
+    name = re.sub(r"[^a-zA-Z0-9\s_-]", "", label)
+    name = re.sub(r"\s+", "_", name.strip())
+    return name if name else "segment"
+
+
+def _unique_clip_filename(label: str, clips_dir: Path) -> str:
+    """Generate a unique filename based on the label, avoiding collisions."""
+    base = _label_to_filename(label)
+    filename = f"{base}.mp4"
+    if not (clips_dir / filename).exists():
+        return filename
+    # Append a counter if the name already exists
+    counter = 2
+    while (clips_dir / f"{base}_{counter}.mp4").exists():
+        counter += 1
+    return f"{base}_{counter}.mp4"
     """Run a full decomposition job: detect text boundaries, then split video.
 
     1. Extract frames from the source video at the configured interval
@@ -54,13 +73,14 @@ def run_decompose_job(job_id: int):
 
         # Step 5: Extract clips and create database records
         for seg in segments:
-            clip_filename = f"{uuid.uuid4().hex}.mp4"
+            clip_filename = _unique_clip_filename(seg["label"], CLIPS_DIR)
             clip_path = CLIPS_DIR / clip_filename
 
             extract_clip(source_path, clip_path, seg["start_time"], seg["end_time"])
 
             # Generate thumbnail from the start of the clip
-            thumb_filename = f"{uuid.uuid4().hex}.jpg"
+            thumb_base = _label_to_filename(seg["label"])
+            thumb_filename = f"{thumb_base}_thumb.jpg"
             thumb_path = THUMBNAILS_DIR / thumb_filename
             try:
                 generate_thumbnail(clip_path, thumb_path, time_offset=0.5)
