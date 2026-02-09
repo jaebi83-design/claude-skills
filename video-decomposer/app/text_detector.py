@@ -47,7 +47,12 @@ def normalize_text(text: str) -> str:
 
 
 def texts_are_similar(text_a: str, text_b: str) -> bool:
-    """Check if two text strings are similar enough to be the same marker."""
+    """Check if two text strings are similar enough to be the same marker.
+
+    Also treats one text as matching if it is a substring of the other
+    (handles partial OCR reads like "YOKOMEN UCHI HIJI OSAE" vs
+    "YOKOMEN UCHI HIJI OSAE ICHI").
+    """
     norm_a = normalize_text(text_a)
     norm_b = normalize_text(text_b)
 
@@ -55,6 +60,10 @@ def texts_are_similar(text_a: str, text_b: str) -> bool:
         return True
     if not norm_a or not norm_b:
         return False
+
+    # If one is contained within the other, treat as same
+    if norm_a in norm_b or norm_b in norm_a:
+        return True
 
     ratio = SequenceMatcher(None, norm_a, norm_b).ratio()
     return ratio >= TEXT_CHANGE_THRESHOLD
@@ -84,30 +93,50 @@ def detect_text_boundaries(frames: list[Path], interval: float) -> list[dict]:
         frame_texts.append({"timestamp": timestamp, "text": text})
 
     # Second pass: group consecutive frames with similar text
-    # and only emit a boundary when the text persists
+    # Frames with no detected text are skipped (carry forward the last label)
+    # Only emit a boundary when new text persists for MIN_PERSIST_FRAMES
     boundaries = []
-    current_text = frame_texts[0]["text"]
+    current_text = None
     current_start = frame_texts[0]["timestamp"]
-    current_count = 1
+    current_count = 0
 
-    for i in range(1, len(frame_texts)):
-        ft = frame_texts[i]
+    for ft in frame_texts:
+        text = ft["text"]
+        normalized = normalize_text(text)
 
-        if texts_are_similar(current_text, ft["text"]):
-            # Same text continues
+        # Skip frames with no detected text — don't treat as a boundary
+        if not normalized:
+            continue
+
+        if current_text is None:
+            # First frame with text
+            current_text = text
+            current_start = ft["timestamp"]
+            current_count = 1
+            continue
+
+        if texts_are_similar(current_text, text):
+            # Same text continues — use the longer version as the label
+            # (handles partial OCR building up to the full label)
             current_count += 1
+            if len(normalize_text(text)) > len(normalize_text(current_text)):
+                current_text = text
         else:
             # Text changed — save previous if it persisted long enough
-            if current_count >= MIN_PERSIST_FRAMES or len(boundaries) == 0:
+            if current_count >= MIN_PERSIST_FRAMES:
                 boundaries.append({"timestamp": current_start, "text": current_text})
 
             # Start tracking new text
-            current_text = ft["text"]
+            current_text = text
             current_start = ft["timestamp"]
             current_count = 1
 
     # Don't forget the last group
-    if current_count >= MIN_PERSIST_FRAMES or len(boundaries) == 0:
+    if current_text and current_count >= MIN_PERSIST_FRAMES:
         boundaries.append({"timestamp": current_start, "text": current_text})
+
+    # If no boundaries found, treat whole video as one segment
+    if not boundaries and frame_texts:
+        boundaries.append({"timestamp": frame_texts[0]["timestamp"], "text": ""})
 
     return boundaries
