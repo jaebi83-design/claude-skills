@@ -19,4 +19,4 @@ MAX_UPLOAD_SIZE_MB = 500
 # Text detection settings
 FRAME_SAMPLE_INTERVAL = 1.0  # seconds between frame samples
 OCR_CONFIDENCE_THRESHOLD = 40  # minimum confidence for OCR text
-TEXT_CHANGE_THRESHOLD = 0.6  # similarity threshold to consider text "changed"
+TEXT_CHANGE_THRESHOLD = 0.95  # similarity threshold to consider text "changed"
