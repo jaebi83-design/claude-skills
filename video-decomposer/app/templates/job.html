@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Job #{{ job.id }} - Video Decomposer{% endblock %}
+{% block content %}
+<h1>Job #{{ job.id }}</h1>
+
+<div class="job-info">
+    <p><strong>Source:</strong> {{ job.source_filename }}</p>
+    <p><strong>Status:</strong>
+        <span class="status-badge status-{{ job.status }}">{{ job.status }}</span>
+    </p>
+    <p><strong>Frame Interval:</strong> {{ job.frame_interval }}s</p>
+    <p><strong>Created:</strong> {{ job.created_at }}</p>
+    {% if job.completed_at %}
+    <p><strong>Completed:</strong> {{ job.completed_at }}</p>
+    {% endif %}
+    {% if job.error_message %}
+    <p class="error-text"><strong>Error:</strong> {{ job.error_message }}</p>
+    {% endif %}
+</div>
+
+{% if job.status == 'pending' or job.status == 'processing' %}
+<div class="processing-notice" id="processing-notice" data-job-id="{{ job.id }}">
+    <div class="spinner"></div>
+    <p>Processing video... This page will refresh automatically.</p>
+</div>
+{% endif %}
+
+{% if segments %}
+<h2>Detected Segments ({{ segments|length }})</h2>
+<div class="segments-grid">
+    {% for seg in segments %}
+    <div class="segment-card">
+        {% if seg.thumbnail_filename %}
+        <img src="/video/thumbnails/{{ seg.thumbnail_filename }}" alt="Thumbnail" class="segment-thumb">
+        {% else %}
+        <div class="segment-thumb-placeholder">No thumbnail</div>
+        {% endif %}
+        <div class="segment-info">
+            <h3>{{ seg.label }}</h3>
+            <p class="segment-time">
+                {{ "%.1f"|format(seg.start_time) }}s - {{ "%.1f"|format(seg.end_time) }}s
+                ({{ "%.1f"|format(seg.duration_seconds) }}s)
+            </p>
+            <a href="/clip/{{ seg.id }}" class="btn btn-sm">View Clip</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% elif job.status == 'complete' %}
+<p class="empty-state">No segments were detected in this video.</p>
+{% endif %}
+{% endblock %}

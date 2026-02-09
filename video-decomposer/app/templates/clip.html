@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ segment.label }} - Video Decomposer{% endblock %}
+{% block content %}
+<div class="clip-detail">
+    <h1>{{ segment.label }}</h1>
+    <div class="clip-meta">
+        <p><strong>Source:</strong> {{ segment.source_filename }}</p>
+        <p><strong>Time Range:</strong>
+            {{ "%.1f"|format(segment.start_time) }}s - {{ "%.1f"|format(segment.end_time) }}s
+        </p>
+        <p><strong>Duration:</strong> {{ "%.1f"|format(segment.duration_seconds) }}s</p>
+    </div>
+
+    {% if segment.clip_filename %}
+    <div class="video-player">
+        <video controls preload="metadata">
+            <source src="/video/clips/{{ segment.clip_filename }}" type="video/mp4">
+            Your browser does not support video playback.
+        </video>
+    </div>
+    {% endif %}
+
+    <a href="/job/{{ segment.job_id }}" class="btn">Back to Job</a>
+</div>
+{% endblock %}

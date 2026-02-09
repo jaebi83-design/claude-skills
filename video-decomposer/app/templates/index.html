@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Video Decomposer{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+
+<section class="section">
+    <h2>Decomposition Jobs</h2>
+    {% if jobs %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Job #</th>
+                <th>Source Video</th>
+                <th>Status</th>
+                <th>Segments</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr>
+                <td>{{ job.id }}</td>
+                <td>{{ job.source_filename }}</td>
+                <td>
+                    <span class="status-badge status-{{ job.status }}">{{ job.status }}</span>
+                </td>
+                <td>{{ job.segments_found or '-' }}</td>
+                <td>{{ job.created_at }}</td>
+                <td><a href="/job/{{ job.id }}" class="btn btn-sm">View</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No jobs yet. <a href="/upload">Upload a video</a> to get started.</p>
+    {% endif %}
+</section>
+
+<section class="section">
+    <h2>Uploaded Videos</h2>
+    {% if videos %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Filename</th>
+                <th>Duration</th>
+                <th>Uploaded</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for video in videos %}
+            <tr>
+                <td>{{ video.id }}</td>
+                <td>{{ video.filename }}</td>
+                <td>{{ "%.1f"|format(video.duration_seconds or 0) }}s</td>
+                <td>{{ video.uploaded_at }}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="startDecompose({{ video.id }})">
+                        Decompose
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No videos uploaded yet.</p>
+    {% endif %}
+</section>
+{% endblock %}
