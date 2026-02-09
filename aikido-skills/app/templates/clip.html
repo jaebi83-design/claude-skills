@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ clip.attack_name or 'Clip' }} - {{ clip.technique_name or '' }} - Aikido Skills{% endblock %}
+{% block content %}
+<div class="clip-detail">
+    <a href="/" class="back-link">&larr; Back to browse</a>
+
+    <div class="clip-detail-video">
+        <video controls autoplay>
+            <source src="/video/clips/{{ clip.storage_path }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <div class="clip-detail-meta">
+        <h1>
+            {% if clip.attack_name %}{{ clip.attack_name }}{% endif %}
+            {% if clip.technique_name %} &mdash; {{ clip.technique_name }}{% endif %}
+        </h1>
+
+        <div class="meta-grid">
+            {% if clip.attack_name %}
+            <div class="meta-item">
+                <span class="meta-label">Attack</span>
+                <span class="meta-value">{{ clip.attack_name }} {% if clip.attack_jp %}({{ clip.attack_jp }}){% endif %}</span>
+            </div>
+            {% endif %}
+            {% if clip.technique_name %}
+            <div class="meta-item">
+                <span class="meta-label">Technique</span>
+                <span class="meta-value">{{ clip.technique_name }} {% if clip.technique_jp %}({{ clip.technique_jp }}){% endif %}</span>
+            </div>
+            {% endif %}
+            {% if clip.energy %}
+            <div class="meta-item">
+                <span class="meta-label">Energy</span>
+                <span class="meta-value"><span class="badge badge-{{ clip.energy }}">{{ clip.energy }}</span></span>
+            </div>
+            {% endif %}
+            <div class="meta-item">
+                <span class="meta-label">Duration</span>
+                <span class="meta-value">{{ "%.1f"|format(clip.duration_seconds) }} seconds</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Source Clip</span>
+                <span class="meta-value">{{ "%.1f"|format(clip.start_time) }}s &ndash; {{ "%.1f"|format(clip.end_time) }}s</span>
+            </div>
+            {% if clip.notes %}
+            <div class="meta-item">
+                <span class="meta-label">Notes</span>
+                <span class="meta-value">{{ clip.notes }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

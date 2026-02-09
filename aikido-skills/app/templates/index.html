@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Browse - Aikido Skills{% endblock %}
+{% block content %}
+<h1>Aikido Techniques</h1>
+
+<form class="filters" method="get" action="/">
+    <div class="filter-group">
+        <label for="attack_type_id">Attack</label>
+        <select name="attack_type_id" id="attack_type_id" onchange="this.form.submit()">
+            <option value="">All Attacks</option>
+            {% for a in attacks %}
+            <option value="{{ a.id }}" {% if selected_attack == a.id %}selected{% endif %}>
+                {{ a.name }} ({{ a.name_jp }})
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-group">
+        <label for="technique_id">Technique</label>
+        <select name="technique_id" id="technique_id" onchange="this.form.submit()">
+            <option value="">All Techniques</option>
+            {% for t in techniques %}
+            <option value="{{ t.id }}" {% if selected_technique == t.id %}selected{% endif %}>
+                {{ t.name }} ({{ t.name_jp }})
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-group">
+        <label for="energy">Energy</label>
+        <select name="energy" id="energy" onchange="this.form.submit()">
+            <option value="">All Energy</option>
+            <option value="omote" {% if selected_energy == 'omote' %}selected{% endif %}>Omote (entering)</option>
+            <option value="ura" {% if selected_energy == 'ura' %}selected{% endif %}>Ura (turning)</option>
+        </select>
+    </div>
+    <a href="/" class="btn btn-secondary">Clear</a>
+</form>
+
+{% if clips %}
+<div class="clip-grid">
+    {% for clip in clips %}
+    <a href="/clip/{{ clip.id }}" class="clip-card">
+        <div class="clip-video-wrapper">
+            <video preload="metadata" muted>
+                <source src="/video/clips/{{ clip.storage_path }}" type="video/mp4">
+            </video>
+            <span class="clip-duration">{{ "%.1f"|format(clip.duration_seconds) }}s</span>
+        </div>
+        <div class="clip-info">
+            <div class="clip-attack">{{ clip.attack_name or 'Untagged' }}</div>
+            <div class="clip-technique">{{ clip.technique_name or 'Untagged' }}</div>
+            {% if clip.energy %}
+            <span class="badge badge-{{ clip.energy }}">{{ clip.energy }}</span>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <p>No clips found.</p>
+    <a href="/upload" class="btn">Upload a video</a>
+</div>
+{% endif %}
+{% endblock %}

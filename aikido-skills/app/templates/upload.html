@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}Upload - Aikido Skills{% endblock %}
+{% block content %}
+<h1>Upload Video</h1>
+
+<!-- Phase 1: Upload -->
+<div id="upload-section">
+    <div class="upload-area" id="drop-zone">
+        <p>Drag & drop a video file here, or click to select</p>
+        <input type="file" id="file-input" accept="video/*" hidden>
+    </div>
+    <div id="upload-progress" class="progress-bar" hidden>
+        <div class="progress-fill" id="progress-fill"></div>
+        <span id="progress-text">Uploading...</span>
+    </div>
+</div>
+
+<!-- Phase 2: Mark Clips -->
+<div id="clip-section" hidden>
+    <h2>Mark Clips</h2>
+    <div class="video-container">
+        <video id="source-video" controls>
+            <source id="source-video-src" type="video/mp4">
+        </video>
+    </div>
+    <div class="clip-controls">
+        <p class="help-text">Watch the video, then define clips with start/end times and metadata below.</p>
+        <button class="btn" onclick="addClipRow()">+ Add Clip</button>
+    </div>
+
+    <div id="clip-list"></div>
+
+    <button class="btn btn-primary" id="process-btn" onclick="processClips()" hidden>
+        Process Clips
+    </button>
+    <div id="process-status"></div>
+</div>
+
+{% block scripts %}
+<script>
+const attacks = {{ attacks | tojson }};
+const techniques = {{ techniques | tojson }};
+let sourceVideoId = null;
+
+// Upload handling
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('drag-over');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) uploadFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) uploadFile(fileInput.files[0]);
+});
+
+async function uploadFile(file) {
+    const progressBar = document.getElementById('upload-progress');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    progressBar.hidden = false;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const pct = Math.round((e.loaded / e.total) * 100);
+                progressFill.style.width = pct + '%';
+                progressText.textContent = pct + '% uploaded';
+            }
+        });
+
+        const response = await new Promise((resolve, reject) => {
+            xhr.onload = () => resolve(JSON.parse(xhr.responseText));
+            xhr.onerror = () => reject(new Error('Upload failed'));
+            xhr.open('POST', '/api/upload');
+            xhr.send(formData);
+        });
+
+        sourceVideoId = response.id;
+        document.getElementById('upload-section').hidden = true;
+        document.getElementById('clip-section').hidden = false;
+        document.getElementById('source-video-src').src = '/video/originals/' + response.storage_path;
+        document.getElementById('source-video').load();
+        addClipRow();
+    } catch (err) {
+        progressText.textContent = 'Upload failed: ' + err.message;
+    }
+}
+
+function addClipRow() {
+    const list = document.getElementById('clip-list');
+    const index = list.children.length;
+    const row = document.createElement('div');
+    row.className = 'clip-row';
+    row.innerHTML = `
+        <div class="clip-row-header">
+            <strong>Clip ${index + 1}</strong>
+            <button class="btn btn-small btn-danger" onclick="this.closest('.clip-row').remove(); updateProcessBtn()">Remove</button>
+        </div>
+        <div class="clip-row-fields">
+            <div class="field">
+                <label>Start (sec)</label>
+                <input type="number" step="0.1" min="0" class="clip-start" placeholder="0.0">
+            </div>
+            <div class="field">
+                <label>End (sec)</label>
+                <input type="number" step="0.1" min="0" class="clip-end" placeholder="10.0">
+            </div>
+            <div class="field">
+                <label>Attack</label>
+                <select class="clip-attack">
+                    <option value="">-- Select --</option>
+                    ${attacks.map(a => `<option value="${a.id}">${a.name}</option>`).join('')}
+                </select>
+            </div>
+            <div class="field">
+                <label>Technique</label>
+                <select class="clip-technique">
+                    <option value="">-- Select --</option>
+                    ${techniques.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+                </select>
+            </div>
+            <div class="field">
+                <label>Energy</label>
+                <select class="clip-energy">
+                    <option value="">-- Select --</option>
+                    <option value="omote">Omote</option>
+                    <option value="ura">Ura</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Notes</label>
+                <input type="text" class="clip-notes" placeholder="Optional notes">
+            </div>
+        </div>
+    `;
+    list.appendChild(row);
+    updateProcessBtn();
+}
+
+function updateProcessBtn() {
+    const rows = document.querySelectorAll('.clip-row');
+    document.getElementById('process-btn').hidden = rows.length === 0;
+}
+
+async function processClips() {
+    const rows = document.querySelectorAll('.clip-row');
+    const clips = [];
+    for (const row of rows) {
+        const start = parseFloat(row.querySelector('.clip-start').value);
+        const end = parseFloat(row.querySelector('.clip-end').value);
+        if (isNaN(start) || isNaN(end) || end <= start) {
+            alert('Each clip needs valid start/end times (end must be after start).');
+            return;
+        }
+        clips.push({
+            start_time: start,
+            end_time: end,
+            attack_type_id: parseInt(row.querySelector('.clip-attack').value) || null,
+            technique_id: parseInt(row.querySelector('.clip-technique').value) || null,
+            energy: row.querySelector('.clip-energy').value || null,
+            notes: row.querySelector('.clip-notes').value || null,
+        });
+    }
+
+    const statusEl = document.getElementById('process-status');
+    const btn = document.getElementById('process-btn');
+    btn.disabled = true;
+    statusEl.textContent = 'Processing clips...';
+
+    try {
+        const resp = await fetch('/api/process', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({source_video_id: sourceVideoId, clips}),
+        });
+        if (!resp.ok) {
+            const err = await resp.json();
+            throw new Error(err.detail || 'Processing failed');
+        }
+        const result = await resp.json();
+        statusEl.innerHTML = `Created ${result.clips.length} clip(s). <a href="/">Browse clips</a>`;
+    } catch (err) {
+        statusEl.textContent = 'Error: ' + err.message;
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}
