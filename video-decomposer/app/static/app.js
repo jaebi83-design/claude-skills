@@ -96,9 +96,17 @@ function startDecompose(videoId) {
             frame_interval: parseFloat(interval) || 1.0,
         }),
     })
-        .then((r) => r.json())
+        .then((r) => {
+            if (!r.ok) throw new Error("Failed to start decomposition");
+            return r.json();
+        })
         .then((data) => {
-            window.location.href = `/job/${data.job_id}`;
+            const jobId = data.job_id;
+            if (jobId === undefined || jobId === null) {
+                alert("Error: No job ID returned from server");
+                return;
+            }
+            window.location.href = `/job/${jobId}`;
         })
         .catch((err) => alert("Error: " + err.message));
 }
