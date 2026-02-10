@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Import Clips - Aikido Skills{% endblock %}
+{% block content %}
+<h1>Import Clips</h1>
+<p class="help-text">Upload pre-split video clips directly. Select metadata to tag all files in the batch.</p>
+
+<!-- Batch metadata -->
+<div class="filters" style="margin-bottom: 1.5rem;">
+    <div class="filter-group">
+        <label for="attack_type_id">Attack</label>
+        <select id="attack_type_id">
+            <option value="">-- None --</option>
+            {% for a in attacks %}
+            <option value="{{ a.id }}">{{ a.name }} ({{ a.name_jp }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-group">
+        <label for="technique_id">Technique</label>
+        <select id="technique_id">
+            <option value="">-- None --</option>
+            {% for t in techniques %}
+            <option value="{{ t.id }}">{{ t.name }} ({{ t.name_jp }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-group">
+        <label for="energy">Energy</label>
+        <select id="energy">
+            <option value="">-- None --</option>
+            <option value="omote">Omote (entering)</option>
+            <option value="ura">Ura (turning)</option>
+        </select>
+    </div>
+</div>
+
+<!-- Drop zone -->
+<div class="upload-area" id="drop-zone">
+    <p>Drag & drop video files here, or click to select</p>
+    <input type="file" id="file-input" accept="video/*" multiple hidden>
+</div>
+
+<!-- File queue -->
+<div id="file-list"></div>
+
+<!-- Import button -->
+<button class="btn btn-primary" id="import-btn" onclick="startImport()" hidden>
+    Import Clips
+</button>
+
+<!-- Status -->
+<div id="import-status"></div>
+
+{% block scripts %}
+<script>
+let fileQueue = [];
+
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('drag-over');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    addFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', () => {
+    addFiles(fileInput.files);
+    fileInput.value = '';
+});
+
+function addFiles(files) {
+    for (const f of files) {
+        if (f.type.startsWith('video/') || /\.(mp4|mov|avi|mkv|webm)$/i.test(f.name)) {
+            fileQueue.push(f);
+        }
+    }
+    renderFileList();
+}
+
+function removeFile(index) {
+    fileQueue.splice(index, 1);
+    renderFileList();
+}
+
+function renderFileList() {
+    const list = document.getElementById('file-list');
+    if (fileQueue.length === 0) {
+        list.innerHTML = '';
+        document.getElementById('import-btn').hidden = true;
+        return;
+    }
+    document.getElementById('import-btn').hidden = false;
+    list.innerHTML = fileQueue.map((f, i) => `
+        <div class="clip-row" id="file-row-${i}">
+            <div class="clip-row-header">
+                <strong>${f.name}</strong>
+                <span>
+                    <span class="file-status" id="file-status-${i}"></span>
+                    <button class="btn btn-small btn-danger file-remove-btn" onclick="removeFile(${i})">Remove</button>
+                </span>
+            </div>
+            <div style="font-size: 0.85rem; color: #888;">${(f.size / 1024 / 1024).toFixed(1)} MB</div>
+        </div>
+    `).join('');
+}
+
+async function startImport() {
+    const btn = document.getElementById('import-btn');
+    const statusEl = document.getElementById('import-status');
+    btn.disabled = true;
+
+    // Hide all remove buttons during import
+    document.querySelectorAll('.file-remove-btn').forEach(b => b.hidden = true);
+
+    const attackId = document.getElementById('attack_type_id').value;
+    const techniqueId = document.getElementById('technique_id').value;
+    const energy = document.getElementById('energy').value;
+
+    let success = 0;
+    let failed = 0;
+
+    for (let i = 0; i < fileQueue.length; i++) {
+        const statusSpan = document.getElementById(`file-status-${i}`);
+        const row = document.getElementById(`file-row-${i}`);
+        statusSpan.textContent = 'Uploading...';
+        statusSpan.style.color = '#7eb8da';
+
+        const formData = new FormData();
+        formData.append('file', fileQueue[i]);
+        if (attackId) formData.append('attack_type_id', attackId);
+        if (techniqueId) formData.append('technique_id', techniqueId);
+        if (energy) formData.append('energy', energy);
+
+        try {
+            const resp = await fetch('/api/import-clip', {
+                method: 'POST',
+                body: formData,
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                throw new Error(err.detail || 'Upload failed');
+            }
+            const result = await resp.json();
+            statusSpan.textContent = `Done (clip #${result.id})`;
+            statusSpan.style.color = '#4ade80';
+            success++;
+        } catch (err) {
+            statusSpan.textContent = `Failed: ${err.message}`;
+            statusSpan.style.color = '#f87171';
+            failed++;
+        }
+    }
+
+    statusEl.innerHTML = `<strong>Import complete:</strong> ${success} succeeded` +
+        (failed > 0 ? `, ${failed} failed` : '') +
+        `. <a href="/">Browse clips</a>`;
+    btn.hidden = true;
+}
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,7 +1,7 @@
 import uuid
 import shutil
 from pathlib import Path
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from typing import Optional
 from app.config import ORIGINALS_DIR, CLIPS_DIR
 from app.database import (
@@ -98,6 +98,54 @@ async def get_clip(clip_id: int):
     if not clip:
         raise HTTPException(status_code=404, detail="Clip not found")
     return clip
+
+
+@router.post("/import-clip")
+async def import_clip(
+    file: UploadFile = File(...),
+    attack_type_id: Optional[int] = Form(None),
+    technique_id: Optional[int] = Form(None),
+    energy: Optional[str] = Form(None),
+    notes: Optional[str] = Form(None),
+):
+    """Import a pre-split clip file directly."""
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No file provided")
+
+    ext = Path(file.filename).suffix or ".mp4"
+    clip_filename = f"{uuid.uuid4().hex}{ext}"
+    clip_path = CLIPS_DIR / clip_filename
+
+    with open(clip_path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    duration = get_video_duration(clip_path)
+
+    # Placeholder source_video row for the foreign key
+    source_id = create_source_video(
+        filename=file.filename,
+        storage_path=file.filename,
+        duration_seconds=duration,
+        notes="Imported via web",
+    )
+
+    clip_id = create_clip(
+        source_video_id=source_id,
+        filename=clip_filename,
+        storage_path=clip_filename,
+        start_time=0.0,
+        end_time=duration,
+        attack_type_id=attack_type_id,
+        technique_id=technique_id,
+        energy=energy if energy else None,
+        notes=notes if notes else None,
+    )
+
+    return {
+        "id": clip_id,
+        "filename": file.filename,
+        "duration_seconds": duration,
+    }
 
 
 @router.get("/attacks")

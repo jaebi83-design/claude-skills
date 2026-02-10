@@ -29,6 +29,16 @@ async def browse(
     )
 
 
+@router.get("/import")
+async def import_page(request: Request):
+    attacks = get_attack_types()
+    techniques = get_techniques()
+    return request.app.state.templates.TemplateResponse(
+        "import.html",
+        {"request": request, "attacks": attacks, "techniques": techniques},
+    )
+
+
 @router.get("/upload")
 async def upload_page(request: Request):
     attacks = get_attack_types()
