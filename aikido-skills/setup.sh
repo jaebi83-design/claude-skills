@@ -22,4 +22,4 @@ echo "Initializing database..."
 python -c "from app.database import init_db; init_db()"
 
 echo "=== Setup complete! ==="
-echo "Run: uvicorn app.main:app --host 0.0.0.0 --port 8000"
+echo "Run: uvicorn app.main:app --host 0.0.0.0 --port 8033"

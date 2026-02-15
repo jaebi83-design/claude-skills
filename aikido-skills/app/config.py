@@ -11,5 +11,5 @@ for d in [DATA_DIR, ORIGINALS_DIR, CLIPS_DIR]:
     d.mkdir(parents=True, exist_ok=True)
 
 HOST = "0.0.0.0"
-PORT = 8000
+PORT = 8033
 MAX_UPLOAD_SIZE_MB = 500

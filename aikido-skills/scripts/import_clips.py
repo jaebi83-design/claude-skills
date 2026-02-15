@@ -204,7 +204,7 @@ def main():
         print(f"Would import {len(files)} clip(s).")
     else:
         print(f"Successfully imported {imported} clip(s).")
-        print("View them at: http://localhost:8000/")
+        print("View them at: http://localhost:8033/")
 
 
 if __name__ == "__main__":

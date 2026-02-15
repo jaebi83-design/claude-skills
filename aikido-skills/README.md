@@ -16,10 +16,10 @@ A web application for organizing Aikido training videos by attack, technique, an
 cd aikido-skills
 chmod +x setup.sh
 ./setup.sh
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+uvicorn app.main:app --host 0.0.0.0 --port 8033
 ```
 
-Then open http://localhost:8000 in your browser.
+Then open http://localhost:8033 in your browser.
 
 ## Categories
 
